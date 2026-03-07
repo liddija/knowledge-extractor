@@ -1,101 +1,195 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import FileUpload from "@/components/FileUpload";
+import ApiKeyInput from "@/components/ApiKeyInput";
+import ProcessingStatus from "@/components/ProcessingStatus";
+import { LLMProvider, ParsedConversation, ConversationGroup, AnalysisResult } from "@/lib/types";
+import { parseChatGPTZip, parseChatGPTJSON } from "@/lib/parsers/chatgpt";
+import { parseClaudeExport } from "@/lib/parsers/claude";
+import { parseRawText } from "@/lib/parsers/raw-text";
+import { chunkConversations } from "@/lib/chunker";
+import { analyzeAll } from "@/lib/analyzer";
+
+type Stage = "idle" | "parsing" | "chunking" | "analyzing" | "done" | "error";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();
+  const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState<LLMProvider>("openai");
+  const [stage, setStage] = useState<Stage>("idle");
+  const [error, setError] = useState("");
+  const [conversations, setConversations] = useState<ParsedConversation[]>([]);
+  const [groups, setGroups] = useState<ConversationGroup[]>([]);
+  const [progress, setProgress] = useState({ completed: 0, total: 0 });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleKeySet = useCallback((key: string, prov: LLMProvider) => {
+    setApiKey(key);
+    setProvider(prov);
+  }, []);
+
+  const runAnalysis = async (parsedConvos: ParsedConversation[]) => {
+    if (!apiKey) {
+      setError("Please set your API key first.");
+      setStage("error");
+      return;
+    }
+
+    setConversations(parsedConvos);
+
+    // Chunk
+    setStage("chunking");
+    const chunked = chunkConversations(parsedConvos);
+    setGroups(chunked);
+
+    // Analyze
+    setStage("analyzing");
+    setProgress({ completed: 0, total: chunked.length });
+
+    try {
+      const result = await analyzeAll(chunked, apiKey, provider, (completed, total) => {
+        setProgress({ completed, total });
+      });
+
+      // Store results in sessionStorage for the results page
+      const fullResult: AnalysisResult = {
+        ...result,
+        totalConversations: parsedConvos.length,
+        totalGroups: chunked.length,
+      };
+      sessionStorage.setItem("ke-results", JSON.stringify(fullResult));
+
+      setStage("done");
+      // Navigate to results after a brief moment
+      setTimeout(() => router.push("/results"), 800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Analysis failed");
+      setStage("error");
+    }
+  };
+
+  const handleFile = async (file: File) => {
+    setStage("parsing");
+    setError("");
+
+    try {
+      let parsed: ParsedConversation[];
+
+      if (file.name.endsWith(".zip")) {
+        // Try ChatGPT format first, then Claude
+        try {
+          parsed = await parseChatGPTZip(file);
+        } catch {
+          parsed = await parseClaudeExport(file);
+        }
+      } else if (file.name.endsWith(".json")) {
+        const text = await file.text();
+        try {
+          parsed = await parseChatGPTJSON(text);
+        } catch {
+          parsed = await parseClaudeExport(file);
+        }
+      } else {
+        throw new Error("Unsupported file type. Please use .zip or .json");
+      }
+
+      if (parsed.length === 0) {
+        throw new Error("No conversations found in the file.");
+      }
+
+      await runAnalysis(parsed);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to parse file");
+      setStage("error");
+    }
+  };
+
+  const handleText = async (text: string) => {
+    setStage("parsing");
+    setError("");
+
+    try {
+      const parsed = parseRawText(text);
+      if (parsed.length === 0) {
+        throw new Error("Could not parse any conversations from the text.");
+      }
+      await runAnalysis(parsed);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to parse text");
+      setStage("error");
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Hero */}
+      <div className="text-center space-y-3 py-4">
+        <h2 className="text-3xl font-bold text-gray-900">
+          Turn AI Conversations into Knowledge Assets
+        </h2>
+        <p className="text-gray-500 max-w-xl mx-auto">
+          Upload your ChatGPT or Claude export and extract SOPs, recurring
+          patterns, and reusable prompt templates for your team.
+        </p>
+      </div>
+
+      {/* Status (when processing) */}
+      {stage !== "idle" && (
+        <ProcessingStatus
+          stage={stage}
+          progress={stage === "analyzing" ? progress : undefined}
+          conversationCount={conversations.length || undefined}
+          groupCount={groups.length || undefined}
+          error={error}
+        />
+      )}
+
+      {/* Inputs (only when idle or error) */}
+      {(stage === "idle" || stage === "error") && (
+        <div className="space-y-8">
+          <div className="bg-white border rounded-xl p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">
+              1. Set your API key
+            </h3>
+            <ApiKeyInput onKeySet={handleKeySet} />
+          </div>
+
+          <div className="bg-white border rounded-xl p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">
+              2. Upload your conversations
+            </h3>
+            <FileUpload onFileSelected={handleFile} onTextPasted={handleText} />
+            <div className="mt-4 text-xs text-gray-400 space-y-1">
+              <p>
+                <strong>ChatGPT:</strong> Settings &rarr; Data Controls &rarr;
+                Export Data &rarr; upload the .zip
+              </p>
+              <p>
+                <strong>Claude:</strong> Settings &rarr; Account &rarr; Export
+                Data &rarr; upload the .json
+              </p>
+              <p>
+                <strong>Other:</strong> Paste your conversations as text using
+                the &quot;Paste Text&quot; tab
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      )}
+
+      {/* Reset button when error */}
+      {stage === "error" && (
+        <button
+          onClick={() => {
+            setStage("idle");
+            setError("");
+          }}
+          className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Try Again
+        </button>
+      )}
     </div>
   );
 }
