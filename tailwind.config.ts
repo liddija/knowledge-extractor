@@ -13,8 +13,12 @@ const config: Config = {
         foreground: "var(--foreground)",
         teal: {
           DEFAULT: "#7FB3AE",
-          dark: "#6A9E99",
+          dark: "#4A8A85",
           light: "#E8F4F2",
+        },
+        sage: {
+          DEFAULT: "#D9E5E3",
+          border: "#B8CFC9",
         },
         coral: {
           DEFAULT: "#E8735A",

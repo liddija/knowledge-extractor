@@ -12,6 +12,14 @@ body {
   background: var(--background);
 }
 
+/* Subtle grid background pattern */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(184, 207, 201, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 207, 201, 0.3) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

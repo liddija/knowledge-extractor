@@ -45,20 +45,20 @@ export default function FileUpload({
       <div className="flex gap-2">
         <button
           onClick={() => setMode("file")}
-          className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+          className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
             mode === "file"
-              ? "bg-coral text-white"
-              : "bg-cream-dark text-charcoal hover:bg-coral-light hover:text-coral-dark"
+              ? "bg-teal-dark text-white shadow-sm"
+              : "bg-sage/70 backdrop-blur-sm border border-sage-border text-charcoal hover:bg-sage"
           }`}
         >
           Upload File
         </button>
         <button
           onClick={() => setMode("text")}
-          className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+          className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
             mode === "text"
-              ? "bg-coral text-white"
-              : "bg-cream-dark text-charcoal hover:bg-coral-light hover:text-coral-dark"
+              ? "bg-teal-dark text-white shadow-sm"
+              : "bg-sage/70 backdrop-blur-sm border border-sage-border text-charcoal hover:bg-sage"
           }`}
         >
           Paste Text

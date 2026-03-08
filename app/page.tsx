@@ -191,13 +191,13 @@ export default function Home() {
       </div>
 
       {/* Feature showcase */}
-      <div className="bg-white rounded-2xl shadow-sm p-8 space-y-5">
+      <div className="bg-grid bg-cream rounded-2xl shadow-sm p-8 space-y-5 border border-sage-border/40">
         <p className="text-charcoal/70 text-sm leading-relaxed max-w-3xl">
           Your AI conversations contain months of refined expertise. Knowledge
           Extractor analyzes your chat history and surfaces the knowledge that
           matters:
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           {FEATURES.map((feature) => (
             <button
               key={feature.id}
@@ -206,10 +206,10 @@ export default function Home() {
                   selectedFeature === feature.id ? null : feature.id
                 )
               }
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
                 selectedFeature === feature.id
-                  ? "bg-coral text-white shadow-sm"
-                  : "bg-cream-dark text-charcoal hover:bg-coral-light hover:text-coral-dark"
+                  ? "bg-teal-dark text-white shadow-sm"
+                  : "bg-sage/70 backdrop-blur-sm border border-sage-border text-charcoal hover:bg-sage hover:border-teal/40"
               }`}
             >
               {feature.label}
@@ -217,8 +217,8 @@ export default function Home() {
           ))}
         </div>
         {activeFeature && (
-          <div className="bg-coral-light border border-coral/20 rounded-xl px-5 py-4 text-sm text-charcoal animate-fadeIn">
-            <strong className="text-coral-dark">{activeFeature.label}:</strong>{" "}
+          <div className="bg-white/80 backdrop-blur-sm border border-sage-border rounded-xl px-5 py-4 text-sm text-charcoal animate-fadeIn">
+            <strong className="text-teal-dark">{activeFeature.label}:</strong>{" "}
             {activeFeature.description}
           </div>
         )}
