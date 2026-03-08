@@ -23,18 +23,31 @@ export default function Home() {
   const [conversations, setConversations] = useState<ParsedConversation[]>([]);
   const [groups, setGroups] = useState<ConversationGroup[]>([]);
   const [progress, setProgress] = useState({ completed: 0, total: 0 });
+  const [userFocus, setUserFocus] = useState("");
+  const [focusError, setFocusError] = useState(false);
 
   const handleKeySet = useCallback((key: string, prov: LLMProvider) => {
     setApiKey(key);
     setProvider(prov);
   }, []);
 
-  const runAnalysis = async (parsedConvos: ParsedConversation[]) => {
+  /** Validate before starting — returns false if something is missing */
+  const validateInputs = (): boolean => {
     if (!apiKey) {
       setError("Please set your API key first.");
       setStage("error");
-      return;
+      return false;
     }
+    if (!userFocus.trim()) {
+      setFocusError(true);
+      return false;
+    }
+    setFocusError(false);
+    return true;
+  };
+
+  const runAnalysis = async (parsedConvos: ParsedConversation[]) => {
+    const focus = userFocus.trim();
 
     setConversations(parsedConvos);
 
@@ -48,7 +61,7 @@ export default function Home() {
     setProgress({ completed: 0, total: chunked.length });
 
     try {
-      const result = await analyzeAll(chunked, apiKey, provider, (completed, total) => {
+      const result = await analyzeAll(chunked, apiKey, provider, focus, (completed, total) => {
         setProgress({ completed, total });
       });
 
@@ -61,7 +74,6 @@ export default function Home() {
       sessionStorage.setItem("ke-results", JSON.stringify(fullResult));
 
       setStage("done");
-      // Navigate to results after a brief moment
       setTimeout(() => router.push("/results"), 800);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed");
@@ -70,6 +82,7 @@ export default function Home() {
   };
 
   const handleFile = async (file: File) => {
+    if (!validateInputs()) return;
     setStage("parsing");
     setError("");
 
@@ -77,7 +90,6 @@ export default function Home() {
       let parsed: ParsedConversation[];
 
       if (file.name.endsWith(".zip")) {
-        // Try ChatGPT format first, then Claude
         try {
           parsed = await parseChatGPTZip(file);
         } catch {
@@ -106,6 +118,7 @@ export default function Home() {
   };
 
   const handleText = async (text: string) => {
+    if (!validateInputs()) return;
     setStage("parsing");
     setError("");
 
@@ -122,15 +135,16 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Hero */}
-      <div className="text-center space-y-3 py-4">
-        <h2 className="text-3xl font-bold text-gray-900">
-          Turn AI Conversations into Knowledge Assets
+      <div className="text-center space-y-4 py-8">
+        <h2 className="text-4xl sm:text-5xl font-bold text-[#111111] tracking-tight text-balance">
+          Extract SOPs from Your
+          <br />
+          AI Conversations
         </h2>
-        <p className="text-gray-500 max-w-xl mx-auto">
-          Upload your ChatGPT or Claude export and extract SOPs, recurring
-          patterns, and reusable prompt templates for your team.
+        <p className="text-[#5F5F5F] text-lg max-w-2xl mx-auto">
+          Upload your export from your favourite GenAI and extract your SOP.
         </p>
       </div>
 
@@ -147,33 +161,89 @@ export default function Home() {
 
       {/* Inputs (only when idle or error) */}
       {(stage === "idle" || stage === "error") && (
-        <div className="space-y-8">
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">
-              1. Set your API key
-            </h3>
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+                1
+              </span>
+              <h3 className="font-semibold text-[#111111] text-lg">
+                Set your API key
+              </h3>
+            </div>
             <ApiKeyInput onKeySet={handleKeySet} />
           </div>
 
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">
-              2. Upload your conversations
-            </h3>
-            <FileUpload onFileSelected={handleFile} onTextPasted={handleText} />
-            <div className="mt-4 text-xs text-gray-400 space-y-1">
+          <div className="bg-white rounded-2xl shadow-sm p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+                2
+              </span>
+              <h3 className="font-semibold text-[#111111] text-lg">
+                Export your conversations
+              </h3>
+            </div>
+            <div className="text-sm text-[#5F5F5F] space-y-2">
               <p>
-                <strong>ChatGPT:</strong> Settings &rarr; Data Controls &rarr;
-                Export Data &rarr; upload the .zip
+                <strong className="text-[#111111]">Claude:</strong> Settings &rarr; Privacy &rarr; Export
               </p>
               <p>
-                <strong>Claude:</strong> Settings &rarr; Account &rarr; Export
-                Data &rarr; upload the .json
+                <strong className="text-[#111111]">ChatGPT:</strong> Settings &rarr; Data Controls &rarr;
+                Export
               </p>
               <p>
-                <strong>Other:</strong> Paste your conversations as text using
-                the &quot;Paste Text&quot; tab
+                <strong className="text-[#111111]">Other:</strong> Paste your conversations as text using
+                the &quot;Paste Text&quot; tab below
               </p>
             </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+                3
+              </span>
+              <h3 className="font-semibold text-[#111111] text-lg">
+                Describe the SOP you want to extract
+              </h3>
+            </div>
+            <textarea
+              value={userFocus}
+              onChange={(e) => {
+                setUserFocus(e.target.value);
+                if (e.target.value.trim()) setFocusError(false);
+              }}
+              placeholder="e.g. How we onboard new clients, Our content publishing workflow, Bug triage process..."
+              className={`w-full border rounded-2xl px-5 py-4 text-sm text-[#111111] placeholder-[#8E8E8E] focus:outline-none focus:ring-2 focus:border-transparent resize-none transition-shadow ${
+                focusError
+                  ? "border-red-400 focus:ring-red-400"
+                  : "border-gray-200 focus:ring-brand"
+              }`}
+              rows={3}
+            />
+            {focusError ? (
+              <p className="mt-2 text-xs text-red-500 font-medium">
+                Please describe the SOP you want to extract before uploading.
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-[#8E8E8E]">
+                Give a short description of the workflow or process you want to
+                turn into a Standard Operating Procedure. The more specific, the
+                better the results.
+              </p>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+                4
+              </span>
+              <h3 className="font-semibold text-[#111111] text-lg">
+                Upload your conversations
+              </h3>
+            </div>
+            <FileUpload onFileSelected={handleFile} onTextPasted={handleText} />
           </div>
         </div>
       )}
@@ -185,7 +255,7 @@ export default function Home() {
             setStage("idle");
             setError("");
           }}
-          className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+          className="w-full py-3 bg-warm-50 text-[#5F5F5F] rounded-full font-medium hover:bg-warm-100 transition-colors"
         >
           Try Again
         </button>

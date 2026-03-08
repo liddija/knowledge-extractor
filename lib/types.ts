@@ -26,28 +26,8 @@ export interface SOP {
   sourceConversations: string[];
 }
 
-export interface Pattern {
-  id: string;
-  name: string;
-  frequency: number;
-  description: string;
-  decisions: string[];
-  insights: string[];
-}
-
-export interface PromptTemplate {
-  id: string;
-  title: string;
-  template: string;
-  variables: string[];
-  useCase: string;
-  originalPrompt: string;
-}
-
 export interface AnalysisResult {
   sops: SOP[];
-  patterns: Pattern[];
-  prompts: PromptTemplate[];
   totalConversations: number;
   totalGroups: number;
 }
@@ -58,4 +38,5 @@ export interface AnalyzeRequest {
   groups: ConversationGroup[];
   apiKey: string;
   provider: LLMProvider;
+  userFocus: string; // Required: what kind of SOP the user wants to extract
 }

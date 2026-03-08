@@ -31,15 +31,15 @@ export default function SOPCard({ sop }: { sop: SOP }) {
   };
 
   return (
-    <div className="bg-white border rounded-xl p-5 space-y-3">
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 space-y-3">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-gray-900">{sop.title}</h3>
-          <p className="text-sm text-gray-500 mt-0.5">{sop.trigger}</p>
+          <h3 className="font-semibold text-[#111111] text-lg">{sop.title}</h3>
+          <p className="text-sm text-[#5F5F5F] mt-0.5">{sop.trigger}</p>
         </div>
         <button
           onClick={handleCopy}
-          className="text-xs px-3 py-1.5 border rounded-lg text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+          className="text-xs px-4 py-1.5 border border-gray-200 rounded-full text-[#5F5F5F] hover:bg-warm-50 transition-colors shrink-0"
         >
           {copied ? "Copied!" : "Copy MD"}
         </button>
@@ -48,7 +48,7 @@ export default function SOPCard({ sop }: { sop: SOP }) {
       <div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+          className="text-sm text-brand hover:text-brand-dark font-medium transition-colors"
         >
           {expanded ? "Collapse" : `${sop.steps.length} steps - Click to expand`}
         </button>
@@ -57,10 +57,10 @@ export default function SOPCard({ sop }: { sop: SOP }) {
           <ol className="mt-3 space-y-2">
             {sop.steps.map((step, i) => (
               <li key={i} className="flex gap-3 text-sm">
-                <span className="text-indigo-600 font-medium shrink-0">
+                <span className="text-brand font-semibold shrink-0">
                   {i + 1}.
                 </span>
-                <span className="text-gray-700">{step}</span>
+                <span className="text-[#111111]">{step}</span>
               </li>
             ))}
           </ol>
@@ -72,7 +72,7 @@ export default function SOPCard({ sop }: { sop: SOP }) {
           {sop.tools.map((tool) => (
             <span
               key={tool}
-              className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md"
+              className="text-xs bg-warm-50 text-[#5F5F5F] px-3 py-1 rounded-full"
             >
               {tool}
             </span>
@@ -80,7 +80,7 @@ export default function SOPCard({ sop }: { sop: SOP }) {
         </div>
       )}
 
-      <div className="text-xs text-gray-400">
+      <div className="text-xs text-[#8E8E8E]">
         From {sop.sourceConversations.length} conversation(s)
       </div>
     </div>

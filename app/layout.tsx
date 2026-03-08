@@ -1,22 +1,13 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Knowledge Extractor",
   description:
-    "Extract SOPs, patterns, and reusable prompts from your AI conversation history",
+    "Extract Standard Operating Procedures from your AI conversation history",
 };
 
 export default function RootLayout({
@@ -27,19 +18,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
+        className={`${inter.className} antialiased bg-white min-h-screen`}
       >
-        <header className="border-b bg-white">
+        <header className="bg-white shadow-sm sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-sm">KE</span>
             </div>
-            <h1 className="font-semibold text-lg text-gray-900">
+            <h1 className="font-semibold text-lg text-[#111111]">
               Knowledge Extractor
             </h1>
           </div>
         </header>
-        <main className="max-w-5xl mx-auto px-6 py-8">{children}</main>
+        <main className="max-w-5xl mx-auto px-6 py-10">{children}</main>
       </body>
     </html>
   );
