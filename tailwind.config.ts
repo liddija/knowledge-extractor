@@ -11,14 +11,25 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        brand: {
-          DEFAULT: "#E60023",
-          dark: "#CC001F",
-          light: "#FFF0F0",
+        teal: {
+          DEFAULT: "#7FB3AE",
+          dark: "#6A9E99",
+          light: "#E8F4F2",
         },
-        warm: {
-          50: "#F5F5F0",
-          100: "#EEEDE8",
+        coral: {
+          DEFAULT: "#E8735A",
+          dark: "#D4604A",
+          light: "#FFF0EC",
+        },
+        orange: {
+          DEFAULT: "#D4923F",
+          dark: "#BF8236",
+          light: "#FFF5E6",
+        },
+        charcoal: "#2D3436",
+        cream: {
+          DEFAULT: "#F5F3EE",
+          dark: "#ECEAE5",
         },
       },
     },

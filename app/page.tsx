@@ -14,6 +14,45 @@ import { analyzeAll } from "@/lib/analyzer";
 
 type Stage = "idle" | "parsing" | "chunking" | "analyzing" | "done" | "error";
 
+const FEATURES = [
+  {
+    id: "sops",
+    label: "SOPs & Workflows",
+    description:
+      "Step-by-step processes you\u2019ve built through repeated AI interactions",
+  },
+  {
+    id: "prompts",
+    label: "Prompt Templates",
+    description:
+      "Your best prompts extracted and turned into reusable templates with placeholder variables",
+  },
+  {
+    id: "lessons",
+    label: "Lessons Learned",
+    description:
+      "What worked, what didn\u2019t \u2014 trial-and-error insights and debugging approaches",
+  },
+  {
+    id: "decisions",
+    label: "Decision Patterns",
+    description:
+      "How you make decisions, recurring reasoning, and problem-solving strategies",
+  },
+  {
+    id: "brand",
+    label: "Brand & Tone Guidelines",
+    description:
+      "Voice, tone, and messaging rules refined through AI dialogue",
+  },
+  {
+    id: "research",
+    label: "Research & Insights",
+    description:
+      "Market assessments, target audience analyses, and competitive findings",
+  },
+];
+
 export default function Home() {
   const router = useRouter();
   const [apiKey, setApiKey] = useState("");
@@ -25,6 +64,7 @@ export default function Home() {
   const [progress, setProgress] = useState({ completed: 0, total: 0 });
   const [userFocus, setUserFocus] = useState("");
   const [focusError, setFocusError] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
 
   const handleKeySet = useCallback((key: string, prov: LLMProvider) => {
     setApiKey(key);
@@ -134,18 +174,54 @@ export default function Home() {
     }
   };
 
+  const activeFeature = FEATURES.find((f) => f.id === selectedFeature);
+
   return (
     <div className="space-y-10">
       {/* Hero */}
       <div className="text-center space-y-4 py-8">
-        <h2 className="text-4xl sm:text-5xl font-bold text-[#111111] tracking-tight text-balance">
-          Extract SOPs from Your
+        <h2 className="text-4xl sm:text-5xl font-bold text-charcoal tracking-tight text-balance leading-tight">
+          Extract Your High-Impact Workflows
           <br />
-          AI Conversations
+          <span className="text-teal">from Your AI Conversations</span>
         </h2>
-        <p className="text-[#5F5F5F] text-lg max-w-2xl mx-auto">
-          Upload your export from your favourite GenAI and extract your SOP.
+        <p className="text-charcoal/60 text-lg max-w-2xl mx-auto">
+          Upload your AI export. Get back structured knowledge — ready to scale.
         </p>
+      </div>
+
+      {/* Feature showcase */}
+      <div className="bg-white rounded-2xl shadow-sm p-8 space-y-5">
+        <p className="text-charcoal/70 text-sm leading-relaxed max-w-3xl">
+          Your AI conversations contain months of refined expertise. Knowledge
+          Extractor analyzes your chat history and surfaces the knowledge that
+          matters:
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {FEATURES.map((feature) => (
+            <button
+              key={feature.id}
+              onClick={() =>
+                setSelectedFeature(
+                  selectedFeature === feature.id ? null : feature.id
+                )
+              }
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                selectedFeature === feature.id
+                  ? "bg-coral text-white shadow-sm"
+                  : "bg-cream-dark text-charcoal hover:bg-coral-light hover:text-coral-dark"
+              }`}
+            >
+              {feature.label}
+            </button>
+          ))}
+        </div>
+        {activeFeature && (
+          <div className="bg-coral-light border border-coral/20 rounded-xl px-5 py-4 text-sm text-charcoal animate-fadeIn">
+            <strong className="text-coral-dark">{activeFeature.label}:</strong>{" "}
+            {activeFeature.description}
+          </div>
+        )}
       </div>
 
       {/* Status (when processing) */}
@@ -164,10 +240,10 @@ export default function Home() {
         <div className="space-y-6">
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-3 mb-5">
-              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <span className="w-8 h-8 bg-teal text-white rounded-full flex items-center justify-center text-sm font-bold">
                 1
               </span>
-              <h3 className="font-semibold text-[#111111] text-lg">
+              <h3 className="font-semibold text-charcoal text-lg">
                 Set your API key
               </h3>
             </div>
@@ -176,23 +252,23 @@ export default function Home() {
 
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-3 mb-5">
-              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <span className="w-8 h-8 bg-teal text-white rounded-full flex items-center justify-center text-sm font-bold">
                 2
               </span>
-              <h3 className="font-semibold text-[#111111] text-lg">
+              <h3 className="font-semibold text-charcoal text-lg">
                 Export your conversations
               </h3>
             </div>
-            <div className="text-sm text-[#5F5F5F] space-y-2">
+            <div className="text-sm text-charcoal/60 space-y-2">
               <p>
-                <strong className="text-[#111111]">Claude:</strong> Settings &rarr; Privacy &rarr; Export
+                <strong className="text-charcoal">Claude:</strong> Settings &rarr; Privacy &rarr; Export
               </p>
               <p>
-                <strong className="text-[#111111]">ChatGPT:</strong> Settings &rarr; Data Controls &rarr;
+                <strong className="text-charcoal">ChatGPT:</strong> Settings &rarr; Data Controls &rarr;
                 Export
               </p>
               <p>
-                <strong className="text-[#111111]">Other:</strong> Paste your conversations as text using
+                <strong className="text-charcoal">Other:</strong> Paste your conversations as text using
                 the &quot;Paste Text&quot; tab below
               </p>
             </div>
@@ -200,10 +276,10 @@ export default function Home() {
 
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-3 mb-5">
-              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <span className="w-8 h-8 bg-teal text-white rounded-full flex items-center justify-center text-sm font-bold">
                 3
               </span>
-              <h3 className="font-semibold text-[#111111] text-lg">
+              <h3 className="font-semibold text-charcoal text-lg">
                 Describe the SOP you want to extract
               </h3>
             </div>
@@ -214,10 +290,10 @@ export default function Home() {
                 if (e.target.value.trim()) setFocusError(false);
               }}
               placeholder="e.g. How we onboard new clients, Our content publishing workflow, Bug triage process..."
-              className={`w-full border rounded-2xl px-5 py-4 text-sm text-[#111111] placeholder-[#8E8E8E] focus:outline-none focus:ring-2 focus:border-transparent resize-none transition-shadow ${
+              className={`w-full border rounded-2xl px-5 py-4 text-sm text-charcoal placeholder-charcoal/30 bg-cream/50 focus:outline-none focus:ring-2 focus:border-transparent resize-none transition-shadow ${
                 focusError
                   ? "border-red-400 focus:ring-red-400"
-                  : "border-gray-200 focus:ring-brand"
+                  : "border-cream-dark focus:ring-teal"
               }`}
               rows={3}
             />
@@ -226,7 +302,7 @@ export default function Home() {
                 Please describe the SOP you want to extract before uploading.
               </p>
             ) : (
-              <p className="mt-2 text-xs text-[#8E8E8E]">
+              <p className="mt-2 text-xs text-charcoal/40">
                 Give a short description of the workflow or process you want to
                 turn into a Standard Operating Procedure. The more specific, the
                 better the results.
@@ -236,10 +312,10 @@ export default function Home() {
 
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-3 mb-5">
-              <span className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <span className="w-8 h-8 bg-teal text-white rounded-full flex items-center justify-center text-sm font-bold">
                 4
               </span>
-              <h3 className="font-semibold text-[#111111] text-lg">
+              <h3 className="font-semibold text-charcoal text-lg">
                 Upload your conversations
               </h3>
             </div>
@@ -255,7 +331,7 @@ export default function Home() {
             setStage("idle");
             setError("");
           }}
-          className="w-full py-3 bg-warm-50 text-[#5F5F5F] rounded-full font-medium hover:bg-warm-100 transition-colors"
+          className="w-full py-3 bg-cream-dark text-charcoal/60 rounded-full font-medium hover:bg-teal-light hover:text-teal-dark transition-colors"
         >
           Try Again
         </button>

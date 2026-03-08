@@ -47,8 +47,8 @@ export default function FileUpload({
           onClick={() => setMode("file")}
           className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
             mode === "file"
-              ? "bg-brand text-white"
-              : "bg-warm-50 text-[#5F5F5F] hover:bg-warm-100"
+              ? "bg-coral text-white"
+              : "bg-cream-dark text-charcoal hover:bg-coral-light hover:text-coral-dark"
           }`}
         >
           Upload File
@@ -57,8 +57,8 @@ export default function FileUpload({
           onClick={() => setMode("text")}
           className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
             mode === "text"
-              ? "bg-brand text-white"
-              : "bg-warm-50 text-[#5F5F5F] hover:bg-warm-100"
+              ? "bg-coral text-white"
+              : "bg-cream-dark text-charcoal hover:bg-coral-light hover:text-coral-dark"
           }`}
         >
           Paste Text
@@ -73,15 +73,22 @@ export default function FileUpload({
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer ${
+          className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer overflow-hidden ${
             dragOver
-              ? "border-brand bg-brand-light"
+              ? "border-teal bg-teal-light"
               : fileName
               ? "border-green-400 bg-green-50"
-              : "border-gray-200 hover:border-gray-300 hover:bg-warm-50"
+              : "border-cream-dark hover:border-teal/50"
           }`}
           onClick={() => document.getElementById("file-input")?.click()}
         >
+          {/* Background image */}
+          {!fileName && (
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-15"
+              style={{ backgroundImage: "url('/upload-bg.png')" }}
+            />
+          )}
           <input
             id="file-input"
             type="file"
@@ -90,18 +97,18 @@ export default function FileUpload({
             className="hidden"
           />
           {fileName ? (
-            <div>
+            <div className="relative z-10">
               <p className="text-green-700 font-medium">{fileName}</p>
-              <p className="text-sm text-[#8E8E8E] mt-1">
+              <p className="text-sm text-charcoal/40 mt-1">
                 Click or drag to replace
               </p>
             </div>
           ) : (
-            <div>
-              <p className="text-[#111111] font-medium">
+            <div className="relative z-10">
+              <p className="text-charcoal font-medium">
                 Drop your ChatGPT or Claude export here
               </p>
-              <p className="text-sm text-[#8E8E8E] mt-1">
+              <p className="text-sm text-charcoal/40 mt-1">
                 Accepts .zip or .json files
               </p>
             </div>
@@ -113,12 +120,12 @@ export default function FileUpload({
             value={pastedText}
             onChange={(e) => setPastedText(e.target.value)}
             placeholder={`Paste your conversation text here...\n\nFormat:\nUser: your message\nAssistant: AI response\n\n---\n\nUser: another conversation\nAssistant: another response`}
-            className="w-full h-48 border border-gray-200 rounded-2xl p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
+            className="w-full h-48 border border-cream-dark rounded-2xl p-4 text-sm text-charcoal bg-white/60 backdrop-blur-sm resize-y placeholder-charcoal/25 focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent focus:bg-white/80 transition-all"
           />
           <button
             onClick={() => pastedText.trim() && onTextPasted(pastedText)}
             disabled={!pastedText.trim()}
-            className="px-5 py-2.5 bg-brand text-white rounded-full text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-dark transition-colors"
+            className="px-5 py-2.5 bg-teal text-white rounded-full text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-teal-dark transition-colors"
           >
             Use This Text
           </button>

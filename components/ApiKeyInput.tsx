@@ -40,10 +40,10 @@ export default function ApiKeyInput({ onKeySet }: ApiKeyInputProps) {
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-[#111111]">
+      <label className="block text-sm font-medium text-charcoal">
         LLM API Key
       </label>
-      <p className="text-xs text-[#8E8E8E]">
+      <p className="text-xs text-charcoal/40">
         Your key is stored in your browser only and sent directly to the
         provider. We never store it.
       </p>
@@ -54,7 +54,7 @@ export default function ApiKeyInput({ onKeySet }: ApiKeyInputProps) {
             setProvider(e.target.value as LLMProvider);
             setSaved(false);
           }}
-          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
+          className="border border-cream-dark rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent transition-shadow"
         >
           <option value="openai">OpenAI</option>
           <option value="anthropic">Anthropic</option>
@@ -69,12 +69,12 @@ export default function ApiKeyInput({ onKeySet }: ApiKeyInputProps) {
           placeholder={
             provider === "openai" ? "sk-..." : "sk-ant-..."
           }
-          className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
+          className="flex-1 border border-cream-dark rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent transition-shadow"
         />
         {saved ? (
           <button
             onClick={handleClear}
-            className="px-5 py-2.5 border border-gray-200 text-[#5F5F5F] rounded-full text-sm font-medium hover:bg-warm-50 transition-colors"
+            className="px-5 py-2.5 border border-cream-dark text-charcoal/60 rounded-full text-sm font-medium hover:bg-cream-dark transition-colors"
           >
             Clear
           </button>
@@ -82,14 +82,14 @@ export default function ApiKeyInput({ onKeySet }: ApiKeyInputProps) {
           <button
             onClick={handleSave}
             disabled={!apiKey.trim()}
-            className="px-5 py-2.5 bg-brand text-white rounded-full text-sm font-medium disabled:opacity-50 hover:bg-brand-dark transition-colors"
+            className="px-5 py-2.5 bg-teal text-white rounded-full text-sm font-medium disabled:opacity-50 hover:bg-teal-dark transition-colors"
           >
             Save
           </button>
         )}
       </div>
       {saved && (
-        <p className="text-xs text-brand font-medium">
+        <p className="text-xs text-teal font-medium">
           Key saved ({provider === "openai" ? "OpenAI" : "Anthropic"})
         </p>
       )}
